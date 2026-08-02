@@ -1,0 +1,13 @@
+{
+  "name": "xau-omniscient-scalper",
+  "version": "12.0.0",
+  "description": "XAU/USDT Omniscient Scalping Terminal - 50 agent consensus scalping engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

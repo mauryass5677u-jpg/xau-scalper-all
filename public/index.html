@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XAU/USDT OMNISCIENT SCALPING TERMINAL</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">◆</span>
+    <span>XAU/USDT <em>OMNISCIENT SCALPER v12.0</em></span>
+  </div>
+  <div class="tfs" id="tfBar"></div>
+  <div class="clock">
+    <span id="clock">--:--:-- UTC</span>
+    <span class="cdsep">|</span>
+    <span class="cdlabel">NEXT <span id="cdTf">15m</span> CLOSE</span>
+    <b class="cd" id="countdown">--:--</b>
+  </div>
+</header>
+
+<div class="ticker" id="ticker">
+  <div class="tk-main">
+    <span class="sym">XAUUSDT</span>
+    <span class="price" id="price">----.--</span>
+    <span class="chg" id="chg">--.--%</span>
+  </div>
+  <div class="tk-items">
+    <span>BID <b id="bid">--</b></span>
+    <span>ASK <b id="ask">--</b></span>
+    <span>SPREAD <b id="spread">--</b></span>
+    <span>24H H <b class="up" id="h24">--</b></span>
+    <span>24H L <b class="dn" id="l24">--</b></span>
+    <span>24H VOL <b id="vol24">--</b></span>
+    <span>MARK <b id="mark">--</b></span>
+    <span>SPOT <b id="spot">--</b></span>
+    <span class="stale" id="stale">LIVE</span>
+  </div>
+</div>
+
+<main class="grid">
+
+  <section class="panel signal">
+    <div class="phead"><span>SIGNAL · 50-AGENT CONSENSUS</span><span class="tfnote" id="tfNote">15m</span></div>
+    <div id="signalBox">
+      <div class="dir" id="dirBox">
+        <div class="dirlabel">COMPUTING...</div>
+        <div class="dirpct" id="confPct">--</div>
+      </div>
+      <table class="sigtable">
+        <tr><td>ENTRY ZONE</td><td class="v" id="sEntry">--</td></tr>
+        <tr><td>IDEAL ENTRY</td><td class="v hot" id="sEntryExact">--</td></tr>
+        <tr><td>STOP LOSS</td><td class="v dn" id="sSl">--</td></tr>
+        <tr><td>TAKE PROFIT 1</td><td class="v up" id="sTp1">--</td></tr>
+        <tr><td>TAKE PROFIT 2</td><td class="v up" id="sTp2">--</td></tr>
+        <tr><td>TAKE PROFIT 3</td><td class="v up" id="sTp3">--</td></tr>
+        <tr><td>WARNING LEVEL</td><td class="v warn" id="sWarning">--</td></tr>
+        <tr><td>DANGER ZONE</td><td class="v warn" id="sDanger">--</td></tr>
+        <tr><td>TRIGGER</td><td class="v trig" id="sTrigger">--</td></tr>
+      </table>
+      <div class="rationale" id="sRationale">--</div>
+      <div class="votecount" id="voteRow"></div>
+    </div>
+    <div class="phead sub"><span>POSITION SIZER · $10,000 · 1% RISK</span></div>
+    <div class="sizebox" id="sizeBox">
+      <div><span>RISK $</span><b id="szRisk">--</b></div>
+      <div><span>SIZE OZ</span><b id="szOz">--</b></div>
+      <div><span>POS $</span><b id="szUsd">--</b></div>
+      <div><span>LEVERAGE</span><b id="szLev">--</b></div>
+      <div><span>R:R</span><b id="szRR">--</b></div>
+      <div><span>EV</span><b id="szEv">--</b></div>
+      <div><span>P(WIN)</span><b id="szPw">--</b></div>
+    </div>
+    <div class="gates" id="gates"></div>
+  </section>
+
+  <section class="panel chart">
+    <div class="phead"><span>PRICE ACTION</span><span class="tfnote" id="chartTf">15m</span></div>
+    <div class="chartwrap">
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="chartlegend" id="chartLegend"></div>
+  </section>
+
+  <section class="panel ind">
+    <div class="phead"><span>INDICATOR ENGINE</span></div>
+    <table class="kv" id="indTable"></table>
+  </section>
+
+</main>
+
+<main class="grid2">
+
+  <section class="panel mkt">
+    <div class="phead"><span>DERIVATIVES · MICROSTRUCTURE</span></div>
+    <table class="kv" id="mktTable"></table>
+  </section>
+
+  <section class="panel macro">
+    <div class="phead"><span>MACRO · CORRELATION</span></div>
+    <table class="kv" id="macroTable"></table>
+  </section>
+
+  <section class="panel layers">
+    <div class="phead"><span>FIVE-LAYER CONFLUENCE</span></div>
+    <table class="kv" id="layersTable"></table>
+    <div class="biasbar"><div class="bar" id="tcsBar"><span id="tcsLbl"></span></div></div>
+    <div class="mtf" id="mtfRow"></div>
+  </section>
+
+</main>
+
+<section class="panel news">
+  <div class="phead"><span>GOLD NEWS FEED · REAL-TIME HEADLINES</span><span class="tfnote" id="newsTf">GC=F RSS</span></div>
+  <div class="newsgrid" id="newsGrid"><span class="dim">LOADING HEADLINES...</span></div>
+</section>
+
+<section class="panel agents">
+  <div class="phead">
+    <span>50 AGENTS · LIVE VOTE FEED</span>
+    <span class="vsum" id="voteSummary"></span>
+  </div>
+  <div class="agentgrid" id="agentGrid"></div>
+</section>
+
+<footer>
+  <span id="footData">WAITING FOR DATA</span>
+  <span class="disc">⚠️ NOT FINANCIAL ADVICE · HIGH RISK · LEVERAGE AMPLIFIES LOSSES · PAST PERFORMANCE ≠ FUTURE RESULTS · TRADE ONLY WITH CAPITAL YOU CAN AFFORD TO LOSE</span>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>
