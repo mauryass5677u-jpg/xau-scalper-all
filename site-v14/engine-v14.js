@@ -8166,7 +8166,7 @@ function checkGates(ctx, t, sig, data) {
   const g1 = (data && data.freshnessScore != null ? data.freshnessScore : 0) < 60;
   const g2 = atrPct !== null && atrPct >= 0.08 && atrPct <= 0.45 && spread !== null && spread < 0.15;
   const g3 = t.rawMajority >= 251 && t.confidence >= 55;
-  let g4 = true, g5 = true, g6 = true;
+  let g4 = true, g5 = true;
   if (sig && i) {
     const slDist = Math.abs(sig.entry - sig.sl);
     g4 = slDist <= 1.5 * i.atr14 && sig.rr >= 1.5 && sig.leverage <= 10;
@@ -8175,8 +8175,9 @@ function checkGates(ctx, t, sig, data) {
     if (t.d === 1 && book.imbalance > 80) g5 = false;
     if (t.d === -1 && book.imbalance < -80) g5 = false;
   }
-  if (t.d === 1 && (f.funding > 0.001 || f.globalLS > 2.5 || f.oiChange < -3)) g6 = false;
-  if (t.d === -1 && (f.funding < -0.001 || f.globalLS < 0.5 || (f.oiChange > 3 && ctx.price < (i ? i.ema21 : null)))) g6 = false;
+  // Gate 6 = informational only (user policy): crowding (funding/L-S/OI) is
+  // surfaced as a signal warning but no longer blocks consensus signals.
+  const g6 = true;
   const gates = { gate1: g1, gate2: g2, gate3: g3, gate4: g4, gate5: g5, gate6: g6 };
   return { gates, pass: Object.values(gates).every(Boolean) };
 }
@@ -8231,6 +8232,11 @@ function compile(ctx, votes, data) {
   if (fundingRate != null && Math.abs(fundingRate) > 0.0005) {
     warnings.push('EXTREME FUNDING ' + (fundingRate * 100).toFixed(4) + '%');
   }
+  const globalLS = ctx.funds && ctx.funds.globalLS;
+  const oiChange = ctx.funds && ctx.funds.oiChange;
+  if (t.d === 1 && globalLS != null && globalLS > 2.5) warnings.push('CROWDED LONG — L/S ' + globalLS.toFixed(2) + ' (info)');
+  if (t.d === -1 && globalLS != null && globalLS < 0.5) warnings.push('CROWDED SHORT — L/S ' + globalLS.toFixed(2) + ' (info)');
+  if (t.d === 1 && oiChange != null && oiChange < -3) warnings.push('OI CONTRACTION ' + oiChange.toFixed(1) + '% (info)');
   const spread = ctx.book && ctx.book.spread;
   const riskAmt = equity * 0.01 * tier * riskMult;
   const risk = entry != null && sl != null ? Math.abs(entry - sl) : 0;
