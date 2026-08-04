@@ -3,7 +3,7 @@
 // ============================================================================
 // PART C5 — AGENT SWARM: CATEGORIES 41–50 (Agents 41.1 – 50.10) = 100 agents
 // Compiler Masters (Cats 41-46) + System Masters (Cats 47-50)
-// Each agent: 10 rules → 1 vote (LONG/SHORT/NEUTRAL).
+// Each agent: 10 rules → 1 vote (LONG or SHORT — forced side, never NEUTRAL).
 // ============================================================================
 
 const { P, add } = require('./engine.js');

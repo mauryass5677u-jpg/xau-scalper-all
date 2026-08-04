@@ -515,7 +515,7 @@ function runSwarm() {
   handleSignal(res);
   if (state.cycles % 6 === 0) {
     const t = res.tally;
-    const gateRate = res.gates ? Object.keys(res.gates).filter((k) => res.gates[k]).length + '/6' : 'gates off';
+    const gateRate = res.gates && res.gates.gates ? Object.values(res.gates.gates).filter(Boolean).length + '/6' : 'gates off';
     const riskTxt = riskMult < 1 ? ' · risk REDUCED 0.5%' : '';
     if (!res.signal) {
       if (t.d === 0) log('INFO', 'NO TRADE — Agents Divided (' + t.long + 'L/' + t.short + 'S/' + t.neutral + 'N, majority ' + t.rawMajority + '/500)' + riskTxt);
@@ -639,7 +639,7 @@ function renderSignal(s) {
     $('#vMajority').textContent = s.tally.rawMajority;
   }
   const g = s.gates;
-  const names = [['g1', 'DATA FRESHNESS <60s'], ['g2', 'VOLATILITY REGIME ATR%'], ['g3', 'EDGE ≥251 VOTES ≥55%'], ['g4', 'RISK SANITY SL/RR/LEV'], ['g5', 'MICROSTRUCTURE OB'], ['g6', 'MACRO COMPATIBILITY']];
+  const names = [['gate1', 'DATA FRESHNESS <60s'], ['gate2', 'VOLATILITY REGIME ATR%'], ['gate3', 'EDGE ≥251 VOTES ≥55%'], ['gate4', 'RISK SANITY SL/RR/LEV'], ['gate5', 'MICROSTRUCTURE OB'], ['gate6', 'MACRO COMPATIBILITY']];
   if (g && g.gates) {
     $('#gates').innerHTML = names.map(([k, name]) => {
       const on = !!g.gates[k];
@@ -1047,5 +1047,10 @@ setInterval(() => {
 setInterval(() => { tickerPoll(); }, 2000);
 setInterval(() => { if (state.bootDone) cycle(); }, 5000);
 setInterval(() => { loadChart(); }, 10000);
+setInterval(() => { if (state.bootDone) refreshDepth(); }, 2000);
+setInterval(() => { if (state.bootDone) refreshMarket(); }, 10000);
+setInterval(() => { if (state.bootDone) refreshSpot(); }, 60000);
+setInterval(() => { if (state.bootDone) refreshMacro(); }, 300000);
+setInterval(() => { if (state.bootDone) refreshNews(); }, 300000);
 
 bootSequence();

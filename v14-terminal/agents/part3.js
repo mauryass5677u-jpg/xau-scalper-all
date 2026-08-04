@@ -3,7 +3,7 @@
 // ============================================================================
 // PART C3 — AGENT SWARM: CATEGORIES 21–30 (Agents 21.1 – 30.10) = 100 agents
 // Momentum Masters (Cats 21-25) + Moving Average Masters (Cats 26-30)
-// Each agent: 10 rules → 1 vote (LONG/SHORT/NEUTRAL).
+// Each agent: 10 rules → 1 vote (LONG or SHORT — forced side, never NEUTRAL).
 // ============================================================================
 
 const { P, add } = require('./engine.js');

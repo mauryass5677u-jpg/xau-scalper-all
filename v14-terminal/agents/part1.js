@@ -3,7 +3,7 @@
 // ============================================================================
 // PART C1 — AGENT SWARM: CATEGORIES 1–10 (Agents 1.1 – 10.10) = 100 agents
 // Candlestick Masters (Cats 1-5) + S/R Masters (Cats 6-10)
-// Each agent: 10 rules → 1 vote (LONG/SHORT/NEUTRAL).
+// Each agent: 10 rules → 1 vote (LONG or SHORT — forced side, never NEUTRAL).
 // ============================================================================
 
 const { P, add } = require('./engine.js');

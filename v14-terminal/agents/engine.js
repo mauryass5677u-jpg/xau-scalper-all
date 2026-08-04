@@ -2,7 +2,8 @@
 
 // ============================================================================
 // PART C0 — AGENT SWARM ENGINE — XAUUSDT OMNISCIENT SCALPER v14.0
-// Each of the 500 agents casts exactly 1 vote: LONG / SHORT / NEUTRAL.
+// Each of the 500 agents casts exactly 1 vote: LONG or SHORT (forced —
+// a tie or undecided margin resolves to the market-context side).
 // An agent activates its 10 rules; rule weights push it LONG or SHORT.
 // Majority of 500 (>250) decides the scalp trade.
 // ============================================================================
@@ -389,7 +390,31 @@ function add(id, name, cat, opts, rules) {
 
 // ---------------------------------------------------------------------------
 // Vote runtime — exactly one vote per agent per cycle.
+// Every agent MUST take a side: LONG or SHORT. When rule margins are decisive
+// the side comes from the rules; a marginal/zero margin falls back to a
+// deterministic market-context tie-break so NEUTRAL is never emitted.
 // ---------------------------------------------------------------------------
+function ctxTieBreak(ctx) {
+  const price = num(ctx.price);
+  const i = ctx.ind;
+  if (price !== null && i) {
+    if (num(i.ema21) !== null) return price > i.ema21 ? 1 : -1;
+    if (num(i.ema8) !== null) return price > i.ema8 ? 1 : -1;
+    if (i.alignment === 'BULLISH') return 1;
+    if (i.alignment === 'BEARISH') return -1;
+  }
+  const h = ctx.inds && ctx.inds['1h'];
+  if (h) {
+    if (h.alignment === 'BULLISH') return 1;
+    if (h.alignment === 'BEARISH') return -1;
+    if (price !== null && num(h.ema21) !== null) return price > h.ema21 ? 1 : -1;
+  }
+  const prev = ctx.indPrev && num(ctx.indPrev.close);
+  if (price !== null && prev !== null) return price >= prev ? 1 : -1;
+  if (price !== null && num(ctx.pricePrev) !== null) return price >= ctx.pricePrev ? 1 : -1;
+  return 1;
+}
+
 function runAgent(ctx, agent) {
   let bull = 0, bear = 0, active = 0;
   for (const r of agent.rules) {
@@ -402,6 +427,9 @@ function runAgent(ctx, agent) {
   let d = 0;
   if (margin >= min) d = 1;
   else if (margin <= -min) d = -1;
+  else if (margin > 0) d = 1;
+  else if (margin < 0) d = -1;
+  else d = ctxTieBreak(ctx);
   const total = bull + bear;
   const ratio = total > 0 ? Math.max(bull, bear) / total : 0;
   const conf = total === 0 ? 0 : clamp(38 + Math.abs(margin) * 8 + ratio * 12, 0, 96);

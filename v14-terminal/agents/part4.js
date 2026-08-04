@@ -3,7 +3,7 @@
 // ============================================================================
 // PART C4 — AGENT SWARM: CATEGORIES 31–40 (Agents 31.1 – 40.10) = 100 agents
 // Volatility Masters (Cats 31-35) + Smart-Money Concept Masters (Cats 36-40)
-// Each agent: 10 rules → 1 vote (LONG/SHORT/NEUTRAL).
+// Each agent: 10 rules → 1 vote (LONG or SHORT — forced side, never NEUTRAL).
 // ============================================================================
 
 const { P, add } = require('./engine.js');

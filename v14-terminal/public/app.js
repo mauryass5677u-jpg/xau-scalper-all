@@ -116,7 +116,7 @@ function renderSignal(s) {
     $('#vMajority').textContent = s.tally.rawMajority;
   }
   const g = s.gates;
-  const names = [['g1', 'DATA FRESHNESS <60s'], ['g2', 'VOLATILITY REGIME ATR%'], ['g3', 'EDGE ≥251 VOTES ≥55%'], ['g4', 'RISK SANITY SL/RR/LEV'], ['g5', 'MICROSTRUCTURE OB'], ['g6', 'MACRO COMPATIBILITY']];
+  const names = [['gate1', 'DATA FRESHNESS <60s'], ['gate2', 'VOLATILITY REGIME ATR%'], ['gate3', 'EDGE ≥251 VOTES ≥55%'], ['gate4', 'RISK SANITY SL/RR/LEV'], ['gate5', 'MICROSTRUCTURE OB'], ['gate6', 'MACRO COMPATIBILITY']];
   if (g && g.gates) {
     $('#gates').innerHTML = names.map(([k, name]) => {
       const on = !!g.gates[k];
