@@ -116,8 +116,9 @@ async function main() {
 
 async function keysMode() {
   const cdpPort = process.env.CDP_PORT || '9222';
+  const base = process.argv[3] || 'http://127.0.0.1:8080';
   const targets = await getJson('http://127.0.0.1:' + cdpPort + '/json');
-  const page = targets.find((t) => t.type === 'page' && t.url.startsWith('http://127.0.0.1:8080'));
+  const page = targets.find((t) => t.type === 'page' && t.url.startsWith(base));
   if (!page) { console.error('NO TERMINAL PAGE OPEN'); process.exit(1); }
   const ws = await wsConnect(page.webSocketDebuggerUrl);
   const press = (key, code, vk) =>

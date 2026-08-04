@@ -461,7 +461,7 @@ function logSignal(sig) {
     B('📊  24h: ' + fmtPrice(st.high) + ' / ' + fmtPrice(st.low) + ' | Vol: ' + (st.quoteVol ? (st.quoteVol / 1e6).toFixed(1) + 'M' : '--') + ' | Chg: ' + (st.chg != null ? st.chg + '%' : '--')) + '\n' +
     B('⚡  Funding: ' + (f.funding != null ? (f.funding * 100).toFixed(4) + '%' : '--') + ' | OI: ' + (f.oi != null ? Math.round(f.oi) + ' oz' : '--') + ' | L/S: ' + (f.globalLS != null ? f.globalLS.toFixed(2) : '--')) + '\n' +
     bar + '\n' +
-    B('🎯 DIRECTION: ' + dir) + '\n' +
+    B('🎯 DIRECTION: ' + sig.direction) + '\n' +
     B('🧠 CONFIDENCE: ' + sig.confidence + '% (' + sig.votes + '/500 Agents Agree)') + '\n' +
     B('⏳ TIMEFRAME: 15-MINUTE PRIMARY | 3-MINUTE EXECUTION') + '\n' +
     B('📈 QUALITY: ' + sig.quality) + '\n' +
