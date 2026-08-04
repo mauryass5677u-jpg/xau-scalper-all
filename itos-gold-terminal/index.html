@@ -611,19 +611,33 @@ async function loadMacro(){
     dxy:'DX-Y.NYB', tnx:'^TNX', irx:'^IRX', vix:'^VIX', spx:'^GSPC',
     silver:'SI=F', oil:'CL=F', jpy:'JPY=X', eur:'EURUSD=X', copper:'HG=F'
   };
+  const now = Date.now()/1000;
   const entries = await Promise.allSettled(Object.entries(syms).map(async ([key,sym])=>{
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=5m&range=1d`;
-    const j = await fetchJSON(url, { proxyFirst: true });
-    const res = j.chart && j.chart.result && j.chart.result[0];
+    let j=null, mode='15m';
+    try {
+      j = await fetchJSON(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=15m&range=5d`, { proxyFirst: true });
+    } catch(e){ j=null; }
+    let res = j && j.chart && j.chart.result && j.chart.result[0];
+    if(!(res && (res.timestamp||[]).length)) {
+      try {
+        j = await fetchJSON(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=10d`, { proxyFirst: true });
+        mode='1D';
+        res = j && j.chart && j.chart.result && j.chart.result[0];
+      } catch(e){ res=null; }
+    }
     if(!res) return [key, null];
-    const cls = (res.close || []).filter(v=>v!=null);
-    const meta = res.meta || {};
-    const lastC = cls.length? cls[cls.length-1] : null;
-    const prevC = cls.length>1? cls[cls.length-2] : null;
-    let price = (lastC!=null)? lastC : meta.regularMarketPrice;
-    let chg = (lastC!=null && prevC!=null && prevC)? (lastC-prevC) : null;
-    if(price==null && meta.regularMarketPrice!=null) price = meta.regularMarketPrice;
-    return [key, { price, prev: prevC, chg, ret: (prevC!=null&&prevC&&price!=null)? (price-prevC)/prevC*100 : null }];
+    const q = res.indicators && res.indicators.quote && res.indicators.quote[0];
+    const cls = (q && q.close || []).filter(v=>v!=null);
+    if(cls.length<2) return [key, null];
+    const lastC = cls[cls.length-1], prevC = cls[cls.length-2];
+    const ts = res.timestamp||[];
+    const lastT = ts.length? ts[ts.length-1] : null;
+    const ageMin = lastT? Math.round((now-lastT)/60) : null;
+    let price = lastC;
+    if(price==null && res.meta && res.meta.regularMarketPrice!=null) price = res.meta.regularMarketPrice;
+    return [key, { price, prev: prevC, chg: lastC-prevC, mode,
+      ageMin: mode==='1D' ? (ageMin!=null? Math.round(ageMin/1440):null) : ageMin,
+      ret: (prevC && price!=null)? (price-prevC)/prevC*100 : null }];
   }));
   for(const r of entries){
     if(r.status==='fulfilled' && r.value && r.value[1]) S.macro[r.value[0]] = r.value[1];
@@ -715,11 +729,12 @@ function computeMTF(){
 }
 function macroSignal(comp){
   const mac = S.macro;
+  const fresh = (k) => mac[k] && mac[k].ret!=null && mac[k].ageMin!=null && mac[k].ageMin<90;
   const comps=[];
-  if(mac.dxy && mac.dxy.ret!=null) comps.push({w:0.30, v: -clamp(mac.dxy.ret/0.5,-1,1), label:'DXY '+fmtPct(mac.dxy.ret)});
-  if(mac.tnx && mac.tnx.chg!=null) comps.push({w:0.25, v: -clamp((mac.tnx.chg/0.05),-1,1), label:'US10Y '+fmt(mac.tnx.chg,3)+'%'});
-  if(mac.vix && mac.vix.chg!=null) comps.push({w:0.20, v: clamp(mac.vix.chg/1.5,-1,1), label:'VIX '+fmt(mac.vix.chg,2)});
-  if(mac.spx && mac.spx.ret!=null) comps.push({w:0.15, v: -clamp(mac.spx.ret/0.5,-1,1), label:'SPX '+fmtPct(mac.spx.ret)});
+  if(fresh('dxy')) comps.push({w:0.30, v: -clamp(mac.dxy.ret/0.5,-1,1), label:'DXY '+fmtPct(mac.dxy.ret)});
+  if(mac.tnx && mac.tnx.chg!=null && mac.tnx.ageMin!=null && mac.tnx.ageMin<90) comps.push({w:0.25, v: -clamp((mac.tnx.chg/0.05),-1,1), label:'US10Y '+fmt(mac.tnx.chg,3)+'%'});
+  if(mac.vix && mac.vix.chg!=null && mac.vix.ageMin!=null && mac.vix.ageMin<90) comps.push({w:0.20, v: clamp(mac.vix.chg/1.5,-1,1), label:'VIX '+fmt(mac.vix.chg,2)});
+  if(fresh('spx')) comps.push({w:0.15, v: -clamp(mac.spx.ret/0.5,-1,1), label:'SPX '+fmtPct(mac.spx.ret)});
   let ws=0, sw=0;
   for(const x of comps){ ws+=x.w*x.v; sw+=x.w; }
   return { score: sw? ws/sw : 0, comps };
@@ -751,9 +766,10 @@ function computeConfluence(){
   const L4 = computeMTF();
   // L5 Correlation
   const L5c=[];
-  if(mac.dxy && mac.dxy.ret!=null) L5c.push({w:0.40, v: -clamp(mac.dxy.ret/0.5,-1,1)});
-  if(mac.tnx && mac.tnx.chg!=null) L5c.push({w:0.35, v: -clamp(mac.tnx.chg/0.05,-1,1)});
-  if(mac.vix && mac.vix.chg!=null) L5c.push({w:0.25, v: clamp(mac.vix.chg/1.5,-1,1)});
+  const f5 = (k) => mac[k] && mac[k].ret!=null && mac[k].ageMin!=null && mac[k].ageMin<90;
+  if(f5('dxy')) L5c.push({w:0.40, v: -clamp(mac.dxy.ret/0.5,-1,1)});
+  if(mac.tnx && mac.tnx.chg!=null && mac.tnx.ageMin!=null && mac.tnx.ageMin<90) L5c.push({w:0.35, v: -clamp(mac.tnx.chg/0.05,-1,1)});
+  if(mac.vix && mac.vix.chg!=null && mac.vix.ageMin!=null && mac.vix.ageMin<90) L5c.push({w:0.25, v: clamp(mac.vix.chg/1.5,-1,1)});
   let L5s=0,L5w=0; for(const x of L5c){ L5s+=x.w*x.v; L5w+=x.w; }
   const L5 = L5w? L5s/L5w : 0;
   const total = 0.30*L1 + 0.25*L2 + 0.20*L3 + 0.15*L4 + 0.10*L5;
@@ -772,8 +788,10 @@ function directionalVote(){
   votes.push({name:'RSI('+tf+')', v: v.rsi<35?1:(v.rsi>65?-1:0), detail: fmt(v.rsi,1)});
   votes.push({name:'VWAP Position', v: v.price>v.vwap?1:-1, detail: v.price>v.vwap?'above':'below'});
   const dxy=S.macro.dxy, tnx=S.macro.tnx;
-  votes.push({name:'DXY Direction', v: dxy&&dxy.ret!=null?(dxy.ret<0?1:-1):0, detail: dxy?fmtPct(dxy.ret):'n/a'});
-  votes.push({name:'Yield Direction', v: tnx&&tnx.chg!=null?(tnx.chg<0?1:-1):0, detail: tnx?fmt(tnx.chg,3):'n/a'});
+  const dxyFresh = dxy && dxy.ret!=null && dxy.ageMin!=null && dxy.ageMin<90;
+  const tnxFresh = tnx && tnx.chg!=null && tnx.ageMin!=null && tnx.ageMin<90;
+  votes.push({name:'DXY Direction', v: dxyFresh?(dxy.ret<0?1:-1):0, detail: dxyFresh?fmtPct(dxy.ret):(dxy?'stale':'n/a')});
+  votes.push({name:'Yield Direction', v: tnxFresh?(tnx.chg<0?1:-1):0, detail: tnxFresh?fmt(tnx.chg,3):(tnx?'stale':'n/a')});
   votes.push({name:'Order Book Imb.', v: S.depth.imb>20?1:(S.depth.imb<-20?-1:0), detail: fmt(S.depth.imb,1)+'%'});
   const longs=votes.filter(x=>x.v>0).length, shorts=votes.filter(x=>x.v<0).length;
   const dir = longs>=5?'LONG':(shorts>=5?'SHORT':'NO TRADE');
@@ -871,10 +889,14 @@ function buildPlan(dir){
   // Position sizing
   const equity = +$('eq-input').value || 10000;
   const riskPct = +$('risk-input').value || 1;
-  const riskUSD = equity*riskPct/100;
-  const sizeOz = risk>0? riskUSD/risk : 0;
-  const notional = sizeOz*entry;
-  const lev = equity>0? notional/equity : 0;
+  const maxLev = 20;
+  const targetRiskUSD = equity*riskPct/100;
+  let sizeOz = risk>0? targetRiskUSD/risk : 0;
+  let notional = sizeOz*entry;
+  let lev = equity>0? notional/equity : 0;
+  const levCapped = lev > maxLev;
+  if(levCapped){ sizeOz = (equity*maxLev)/entry; notional = sizeOz*entry; lev = maxLev; }
+  const riskUSD = sizeOz*risk; // actual risk at capped size
   // EV
   const sigStr = cf.tcs100;
   const pWin = 0.45 + (sigStr/100)*0.15;
@@ -889,7 +911,7 @@ function buildPlan(dir){
     dir, tf, regime, entry, entryName, alt, entryMin: Math.round((entry-atr*0.25)*100)/100, entryMax: Math.round((entry+atr*0.25)*100)/100,
     sl, risk, tp1:Math.round(tp1*100)/100, tp2:Math.round(tp2*100)/100, tp3:Math.round(tp3*100)/100,
     danger:Math.round(danger*100)/100, warning:Math.round(warning*100)/100,
-    sizeOz:Math.round(sizeOz*100)/100, notional:Math.round(notional), lev:Math.round(lev*10)/10, riskUSD:Math.round(riskUSD*100)/100,
+    sizeOz:Math.round(sizeOz*100)/100, notional:Math.round(notional), lev:Math.round(lev*10)/10, riskUSD:Math.round(riskUSD*100)/100, levCapped,
     pWin:Math.round(pWin*100), evPct:evPct, trigger, slMethod, v, price, atr,
     fib: fb, piv: pv,
   };
@@ -979,9 +1001,12 @@ function renderMacro(){
     if(!d){ html+=`<tr><td>${label}</td><td class="r neu">--</td><td class="r neu">--</td><td class="r neu">--</td></tr>`; continue; }
     const p=d.price!=null? fmt(d.price, key==='tnx'||key==='irx'?3:2) : '--';
     const chg=d.ret!=null? fmtPct(d.ret) : (d.chg!=null? fmt(d.chg,3):'--');
+    const fresh = d.ageMin!=null && d.ageMin<90;
+    const staleMark = d.ageMin!=null && !fresh ? ' <span style="color:#8a5a00;">('+(d.mode==='1D'?d.ageMin+'d':d.ageMin+'m')+')</span>' : '';
     const sig = key==='dxy' ? (d.ret!=null?(d.ret<0?'▲':'▼'):'-') : '·';
     const cls = key==='dxy'||key==='tnx'||key==='irx' ? (d.ret!=null?(d.ret<0?'up':'down'):'neu') : (d.ret!=null?(d.ret>0?'up':'down'):'neu');
-    html+=`<tr><td>${label}</td><td class="r">${p}</td><td class="r ${cls}">${chg}</td><td class="r ${cls}">${sig}</td></tr>`;
+    const cls2 = fresh ? cls : 'neu';
+    html+=`<tr><td>${label}${staleMark}</td><td class="r">${p}</td><td class="r ${cls2}">${chg}</td><td class="r ${cls2}">${fresh?sig:'·'}</td></tr>`;
   }
   tb.innerHTML=html;
   $('macro-age').textContent = nowUTC().slice(11,19)+'Z';
@@ -1161,7 +1186,7 @@ function renderSignal(){
   <tr><th>Price</th><td class="gold">$${fmt(S.price,2)}</td><th>24h Δ</th><td class="${m.chgPct>=0?'up':'down'}">${fmtPct(m.chgPct)}</td><th>24h H/L</th><td>$${fmt(m.high,2)} / $${fmt(m.low,2)}</td></tr>
   <tr><th>Mark / Index</th><td>$${fmt(m.mark,2)} / $${fmt(m.index,2)}</td><th>Funding (8h)</th><td class="${m.funding>0?'up':'down'}">${fmt(m.funding*100,4)}%</td><th>Open Interest</th><td>${fmt(m.oi,0)} oz <span class="${m.oiChange>0?'up':'down'}" style="font-size:10px;">(${fmtPct(m.oiChange)})</span></td></tr>
   <tr><th>Global L/S</th><td>${fmt(m.globalLong*100,1)}% long (${fmt(m.globalRatio,2)}:1)</td><th>Top Trader L/S</th><td>${fmt(m.topLong*100,1)}% long</td><th>Taker B/S</th><td>${fmt(m.takerBS,2)}:1</td></tr>
-  <tr><th>Order Book</th><td>${fmt(S.depth.imb,1)}% imbalance, spread $${fmt(S.depth.spread,2)}</td><th>DXY</th><td class="${S.macro.dxy&&S.macro.dxy.ret<0?'up':'down'}">${S.macro.dxy?fmt(S.macro.dxy.price,2)+' ('+fmtPct(S.macro.dxy.ret)+')':'--'}</td><th>US10Y</th><td class="${S.macro.tnx&&S.macro.tnx.chg<0?'up':'down'}">${S.macro.tnx?fmt(S.macro.tnx.price,3)+'%':'--'}</td></tr>
+  <tr><th>Order Book</th><td>${fmt(S.depth.imb,1)}% imbalance, spread $${fmt(S.depth.spread,2)}</td><th>DXY</th><td class="${S.macro.dxy&&S.macro.dxy.ret<0?'up':'down'}">${S.macro.dxy&&S.macro.dxy.ret!=null?fmt(S.macro.dxy.price,2)+' ('+fmtPct(S.macro.dxy.ret)+')':(S.macro.dxy?'stale':'--')}</td><th>US10Y</th><td class="${S.macro.tnx&&S.macro.tnx.chg<0?'up':'down'}">${S.macro.tnx&&S.macro.tnx.chg!=null?fmt(S.macro.tnx.price,3)+'%':'--'}</td></tr>
   <tr><th>Spot (Gold-API)</th><td>${m.spot!=null?'$'+fmt(m.spot,2):'--'}</td><th>VIX</th><td>${S.macro.vix?fmt(S.macro.vix.price,2):'--'}</td><th>Spot vs Futures</th><td>${m.spot!=null&&S.price!=null?fmt((S.price-m.spot),2):'--'}</td></tr>
   </table></div></div>`;
   // Regime
@@ -1196,7 +1221,7 @@ function renderSignal(){
     <div class="box"><div class="kv"><span class="k">TP1 · 50% pos (1.5R)</span><span class="go">$${fmt(plan.tp1,2)}</span></div>
     <div class="kv"><span class="k">TP2 · 30% pos (2.5R)</span><span class="go">$${fmt(plan.tp2,2)}</span></div>
     <div class="kv"><span class="k">TP3 · 20% pos (4.0R, trail)</span><span class="go">$${fmt(plan.tp3,2)}</span></div></div>
-    <div class="box"><div class="kv"><span class="k">POSITION SIZE</span><span>${fmt(plan.sizeOz,2)} oz ($${fmt(plan.notional,0)} notional)</span></div>
+    <div class="box"><div class="kv"><span class="k">POSITION SIZE</span><span>${fmt(plan.sizeOz,2)} oz ($${fmt(plan.notional,0)} notional)${plan.levCapped?' <span class="warn" style="font-size:9px;">capped @20×</span>':''}</span></div>
     <div class="kv"><span class="k">LEVERAGE</span><span class="${plan.lev>20?'bad':''}">${fmt(plan.lev,1)}×</span></div>
     <div class="kv"><span class="k">RISK AMOUNT</span><span>$${fmt(plan.riskUSD,2)}</span></div>
     <div class="kv"><span class="k">EXPECTED VALUE</span><span class="${plan.evPct>0?'go':'bad'}">${fmt(plan.evPct,2)}% per trade</span></div>
@@ -1216,8 +1241,10 @@ function renderSignal(){
   if(v.adx>25 && v.pdi>v.mdi) longEv.push('ADX '+fmt(v.adx,1)+' with +DI dominant'); else if(v.adx>25 && v.mdi>v.pdi) shortEv.push('ADX '+fmt(v.adx,1)+' with -DI dominant');
   if(v.st>0) longEv.push('Supertrend bullish'); else shortEv.push('Supertrend bearish');
   if(v.rsi>55) longEv.push('RSI '+fmt(v.rsi,1)+' in bullish zone'); else if(v.rsi<45) shortEv.push('RSI '+fmt(v.rsi,1)+' in bearish zone');
-  if(S.macro.dxy && S.macro.dxy.ret<0) longEv.push('DXY falling ('+fmtPct(S.macro.dxy.ret)+') supports gold'); else if(S.macro.dxy) shortEv.push('DXY rising pressures gold');
-  if(S.macro.tnx && S.macro.tnx.chg<0) longEv.push('US10Y falling (lower opportunity cost)'); else if(S.macro.tnx) shortEv.push('US10Y rising (headwind)');
+  const dxyF = S.macro.dxy && S.macro.dxy.ret!=null && S.macro.dxy.ageMin!=null && S.macro.dxy.ageMin<90;
+  const tnxF = S.macro.tnx && S.macro.tnx.chg!=null && S.macro.tnx.ageMin!=null && S.macro.tnx.ageMin<90;
+  if(dxyF && S.macro.dxy.ret<0) longEv.push('DXY falling ('+fmtPct(S.macro.dxy.ret)+') supports gold'); else if(dxyF) shortEv.push('DXY rising pressures gold');
+  if(tnxF && S.macro.tnx.chg<0) longEv.push('US10Y falling (lower opportunity cost)'); else if(tnxF) shortEv.push('US10Y rising (headwind)');
   if(S.depth.imb>20) longEv.push('Order book bid-heavy (+'+fmt(S.depth.imb,1)+'%)'); else if(S.depth.imb<-20) shortEv.push('Order book ask-heavy ('+fmt(S.depth.imb,1)+'%)');
   if(m.takerBS>1.1) longEv.push('Taker flow buying (BS '+fmt(m.takerBS,2)+')'); else if(m.takerBS<0.9) shortEv.push('Taker flow selling');
   html+=`<div class="card"><div class="ch">🧠 Evidence Summary</div><div class="cb"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">

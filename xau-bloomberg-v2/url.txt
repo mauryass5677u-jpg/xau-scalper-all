@@ -1,0 +1,4 @@
+XAU/USDT OMNISCIENT SCALPER TERMINAL v12.0
+LOCAL LINK:  http://localhost:8080
+UNIVERSAL:   (tunnel starting...)
+Updated:     2026-08-02T13:31:04.416Z

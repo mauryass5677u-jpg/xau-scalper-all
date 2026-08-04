@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XAU/USDT OMNISCIENT SCALPER v14.0 · 500-AGENT SWARM</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">◆</span>
+    <span>XAU/USDT <em>OMNISCIENT SCALPER v14.0</em></span>
+    <span class="swarmbadge">500-AGENT SWARM</span>
+  </div>
+  <div class="status" id="status">CONNECTING</div>
+  <div class="clock">
+    <span id="clock">--:--:-- UTC</span>
+    <span class="cdsep">|</span>
+    <span>SESSION <b id="sessionName">--</b></span>
+    <span class="cdsep">|</span>
+    <span>SIGNAL VALID <b class="cd" id="sigValid">--:--</b></span>
+  </div>
+</header>
+
+<div class="ticker" id="ticker">
+  <div class="tk-main">
+    <span class="sym">XAUUSDT</span>
+    <span class="price" id="price">----.--</span>
+    <span class="chg" id="chg">--.--%</span>
+  </div>
+  <div class="tk-items">
+    <span>BID <b id="bid">--</b> <em class="qty" id="bidQty"></em></span>
+    <span>ASK <b id="ask">--</b> <em class="qty" id="askQty"></em></span>
+    <span>SPREAD <b id="spread">--</b></span>
+    <span>24H H <b class="up" id="h24">--</b></span>
+    <span>24H L <b class="dn" id="l24">--</b></span>
+    <span>24H VOL <b id="vol24">--</b></span>
+    <span>MARK <b id="mark">--</b></span>
+    <span>FUNDING <b id="funding">--</b></span>
+    <span>SPOT <b id="spot">--</b></span>
+    <span id="freshPill" class="stale">LIVE</span>
+  </div>
+</div>
+
+<main class="grid">
+
+  <section class="panel signal">
+    <div class="phead"><span>SIGNAL · 500-AGENT CONSENSUS</span><span class="tfnote" id="sigTfNote">15m</span></div>
+    <div id="signalBox">
+      <div class="dir" id="dirBox">
+        <div class="dirlabel">AWAITING CONSENSUS ≥ 251/500</div>
+        <div class="dirpct" id="confPct">--</div>
+      </div>
+      <table class="sigtable">
+        <tr><td>ENTRY ZONE</td><td class="v" id="sEntry">--</td></tr>
+        <tr><td>IDEAL ENTRY</td><td class="v hot" id="sEntryExact">--</td></tr>
+        <tr><td>STOP LOSS</td><td class="v dn" id="sSl">--</td></tr>
+        <tr><td>TAKE PROFIT</td><td class="v up" id="sTp">--</td></tr>
+        <tr><td>TRAIL TRIGGER (2:1)</td><td class="v info" id="sTrail">--</td></tr>
+        <tr><td>INVALIDATION</td><td class="v warn" id="sInv">--</td></tr>
+        <tr><td>R:R</td><td class="v" id="sRr">--</td></tr>
+        <tr><td>SIZE</td><td class="v" id="sSize">--</td></tr>
+        <tr><td>NOTIONAL / LEV</td><td class="v" id="sNotional">--</td></tr>
+        <tr><td>QUALITY</td><td class="v" id="sQuality">--</td></tr>
+        <tr><td>TOP AGENTS</td><td class="v dim" id="sTop">--</td></tr>
+        <tr><td>WARNINGS</td><td class="v warn" id="sWarn">--</td></tr>
+      </table>
+      <div class="votecount" id="voteRow">
+        <div class="lg"><b id="vLong">0</b>LONG</div>
+        <div class="sg"><b id="vShort">0</b>SHORT</div>
+        <div class="nt"><b id="vNeutral">0</b>NEUTRAL</div>
+        <div class="nt"><b id="vMajority">0</b>MAJORITY</div>
+      </div>
+    </div>
+    <div class="phead sub"><span>GATES · 6 REQUIRED</span></div>
+    <div class="gates" id="gates"></div>
+  </section>
+
+  <section class="panel votes">
+    <div class="phead"><span>VOTE BAR · BY CATEGORY</span><span class="tfnote" id="voteTfNote">weights 1.0–1.3</span></div>
+    <div class="histwrap">
+      <div class="hist" id="hist"></div>
+    </div>
+    <div class="dash">
+      <div class="dcell"><span>CYCLES</span><b id="dCycles">--</b></div>
+      <div class="dcell"><span>CYCLE MS</span><b id="dCycleMs">--</b></div>
+      <div class="dcell"><span>FRESHNESS</span><b id="dFresh">--</b></div>
+      <div class="dcell"><span>CONFIDENCE</span><b id="dConf">--</b></div>
+      <div class="dcell"><span>QUALITY</span><b id="dQuality">--</b></div>
+      <div class="dcell"><span>BOOT PHASE</span><b id="dBoot">--</b></div>
+    </div>
+    <div class="freshmeter"><div class="fmbar" id="fmBar"></div></div>
+  </section>
+
+  <section class="panel ind">
+    <div class="phead"><span>INDICATOR ENGINE · 15m</span><span class="tfnote" id="indTfNote">ATR-weighted</span></div>
+    <table class="kv" id="indTable"></table>
+    <div class="phead sub"><span>MTF SNAPSHOT</span></div>
+    <table class="kv" id="mtfTable"></table>
+  </section>
+
+  <section class="panel mkt">
+    <div class="phead"><span>DERIVATIVES · MICROSTRUCTURE</span></div>
+    <table class="kv" id="mktTable"></table>
+  </section>
+
+  <section class="panel macro">
+    <div class="phead"><span>MACRO · CORRELATION</span></div>
+    <table class="kv" id="macroTable"></table>
+  </section>
+
+  <section class="panel depth">
+    <div class="phead"><span>ORDER BOOK</span><span class="tfnote" id="depthNote">--</span></div>
+    <table class="kv" id="depthTable"></table>
+    <div class="phead sub"><span>AGGRESSION · TAPE</span></div>
+    <table class="kv" id="tapeTable"></table>
+  </section>
+
+</main>
+
+<section class="panel chartpanel">
+  <div class="phead"><span>PRICE ACTION · 15m · EMA 8/21/50</span><span class="tfnote" id="chartNote">loading…</span></div>
+  <div class="chartwrap">
+    <canvas id="chart"></canvas>
+  </div>
+</section>
+
+<section class="panel logpanel">
+  <div class="phead"><span>SYSTEM LOG · LIVE</span><span class="tfnote" id="logNote">80 lines</span></div>
+  <div class="log" id="logBox"></div>
+</section>
+
+<footer>
+  <span class="keys">KEYS: <b>R</b> refresh · <b>SPACE</b> pause/resume · <b>L/H</b> bias scan · <b>F</b> fullscreen · <b>S</b> sound · <b>P</b> screenshot · <b>?</b> help · <b>C</b> clear · <b>Q</b> quit</span>
+  <span class="disc">⚠️ NOT FINANCIAL ADVICE · HIGH RISK · LEVERAGE AMPLIFIES LOSSES · PAST PERFORMANCE ≠ FUTURE RESULTS · TRADE ONLY WITH CAPITAL YOU CAN AFFORD TO LOSE</span>
+</footer>
+
+<div class="helpoverlay" id="helpOverlay" hidden>
+  <div class="helpbox">
+    <div class="phead"><span>KEYBOARD REFERENCE</span><span class="tfnote">ESC or ? to close</span></div>
+    <table class="kv">
+      <tr><td>R</td><td>Force refresh (new swarm cycle)</td></tr>
+      <tr><td>SPACE</td><td>Pause / resume swarm (also resumes from HALT)</td></tr>
+      <tr><td>L / H</td><td>Force LONG / SHORT bias scan for 1 cycle</td></tr>
+      <tr><td>F</td><td>Toggle fullscreen</td></tr>
+      <tr><td>S</td><td>Toggle signal sound alert</td></tr>
+      <tr><td>P</td><td>Save terminal screenshot (PNG)</td></tr>
+      <tr><td>?</td><td>Toggle this help</td></tr>
+      <tr><td>C</td><td>Clear signal history</td></tr>
+      <tr><td>Q</td><td>Shut down the terminal</td></tr>
+    </table>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

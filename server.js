@@ -150,7 +150,14 @@ const server = http.createServer((req, res) => {
 refreshCore();
 setInterval(refreshCore, CORE_MS);
 
-server.listen(PORT, () => {
-  console.log(`XAU/USDT OMNISCIENT SCALPING TERMINAL  →  http://localhost:${PORT}`);
-  console.log(`symbol: ${SYMBOL} | default timeframe: ${tf} | agents: 50`);
-});
+function listen(port) {
+  server.on('error', (e) => {
+    if (e.code === 'EADDRINUSE' && port !== 8787) { console.log(`port ${port} busy - falling back to 8787`); listen(8787); }
+    else { console.error('XAU TERMINAL: ' + e.message); process.exit(1); }
+  });
+  server.listen(port, () => {
+    console.log(`XAU/USDT OMNISCIENT SCALPING TERMINAL  →  http://localhost:${port}`);
+    console.log(`symbol: ${SYMBOL} | default timeframe: ${tf} | agents: 50`);
+  });
+}
+listen(PORT);

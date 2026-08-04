@@ -1,0 +1,25 @@
+XAUUSDT v14.0 terminal: http://localhost:8080
+2026-08-04T06:40:28.826Z [INFO] PHASE 1/10 — API Connectivity
+2026-08-04T06:40:29.518Z [OK] REST API ping OK — server time 2026-08-04T06:40:29.496Z
+2026-08-04T06:40:29.532Z [INFO] PHASE 2/10 — Market Data Acquisition
+2026-08-04T06:40:32.593Z [OK] price/24h/funding/OI/depth/klines/derivatives/basis/macro/spot loaded
+2026-08-04T06:40:32.607Z [INFO] PHASE 3/10 — Agent Swarm Boot
+2026-08-04T06:40:32.608Z [OK] Agents 1.1–50.10 (500 agents) loaded & ONLINE
+2026-08-04T06:40:32.608Z [INFO] PHASE 4/10 — Indicator Calibration
+2026-08-04T06:40:32.627Z [OK] ATR14=5.03 | EMA stack=MIXED | RSI=48.8 | MACD/Stoch/CCI/BB/KC/VP/VWAP calibrated
+2026-08-04T06:40:32.628Z [INFO] PHASE 5/10 — Structure Mapping
+2026-08-04T06:40:32.629Z [OK] swings/trendlines/channels/ranges/order blocks/FVGs/voids/pivots mapped
+2026-08-04T06:40:32.629Z [INFO] PHASE 6/10 — Derivatives Calibration
+2026-08-04T06:40:32.629Z [OK] funding/OI/L-S/taker/basis calibrated
+2026-08-04T06:40:32.629Z [INFO] PHASE 7/10 — Risk Parameter Set
+2026-08-04T06:40:32.630Z [OK] ATR stops | size limits | leverage cap 10× | R:R min 1.5 | validity 12 min
+2026-08-04T06:40:32.630Z [INFO] PHASE 8/10 — Gate Calibration
+2026-08-04T06:40:32.630Z [OK] Gate1 <60s | Gate2 ATR% 0.08-0.45 spread<$0.15 | Gate3 ≥251/500 ≥55% | Gate4 SL≤1.5×ATR R:R≥1.5 | Gate5 OB<80% vs | Gate6 funding/OI/L-S
+2026-08-04T06:40:32.630Z [INFO] PHASE 9/10 — UI Initialization
+2026-08-04T06:40:32.631Z [OK] ticker tape | vote bar | gate panel | signal panel | log panel | dashboard metrics
+2026-08-04T06:40:32.631Z [INFO] PHASE 10/10 — System Ready
+2026-08-04T06:40:32.631Z [OK] All systems operational. Agent swarm ready. Gate system ready. Signal engine ready. Awaiting signal conditions...
+2026-08-04T06:40:33.644Z [INFO] WS streams connected
+2026-08-04T06:40:38.125Z [DEBUG] freshness p=600 k=0 b=600 d=600 m=600 score=480
+2026-08-04T06:40:38.138Z [CRITICAL] data stale > 5 min — HALT (manual resume: Space)
+2026-08-04T06:40:43.142Z [DEBUG] freshness p=600 k=0 b=600 d=600 m=600 score=480

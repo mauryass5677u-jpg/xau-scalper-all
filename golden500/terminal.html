@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GOLDEN-500 · XAU/USDT COUNCIL TERMINAL</title>
+<style>
+:root{
+  --bg:#070a08; --panel:#0d130e; --panel2:#101812; --line:#1f2b20; --gold:#d4af37; --gold2:#f2d77a;
+  --buy:#1fbf6f; --sell:#ff4d5e; --nt:#8a8f7e; --dim:#7a8272; --txt:#dfe5d4; --red:#ff5f52;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:radial-gradient(1200px 600px at 70% -10%, #12210f 0%, var(--bg) 55%); color:var(--txt); font-family:'Cascadia Mono','Consolas','Courier New',monospace; font-size:13px; padding:14px;}
+.wrap{max-width:1200px; margin:0 auto;}
+header{display:flex; align-items:center; gap:14px; flex-wrap:wrap; border:1px solid var(--line); background:linear-gradient(180deg, #141a12, var(--panel)); padding:10px 14px; border-radius:6px; box-shadow:0 0 24px rgba(212,175,55,.08);}
+h1{font-size:15px; letter-spacing:2px; color:var(--gold2); font-weight:700; white-space:nowrap;}
+h1 span{color:var(--dim); font-weight:400;}
+#clock{color:var(--dim); font-size:12px;}
+#live-price{font-size:22px; font-weight:700; color:var(--gold2); text-shadow:0 0 12px rgba(212,175,55,.35);}
+.controls{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+select, input, button{background:#0c120d; color:var(--txt); border:1px solid var(--line); padding:6px 10px; font-family:inherit; font-size:12px; border-radius:4px;}
+button{cursor:pointer; background:linear-gradient(180deg,#26331f,#141c12); color:var(--gold2); border-color:#3a4a2e;}
+button:hover{border-color:var(--gold);}
+button:disabled{opacity:.5; cursor:wait;}
+input{width:240px;}
+.grid{display:grid; grid-template-columns:360px 1fr; gap:12px; margin-top:12px; align-items:start;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.panel{border:1px solid var(--line); background:var(--panel); border-radius:6px; overflow:hidden;}
+.panel h2{font-size:11px; letter-spacing:2px; color:var(--gold); background:var(--panel2); padding:6px 10px; border-bottom:1px solid var(--line);}
+table{width:100%; border-collapse:collapse; font-size:12px;}
+th{text-align:left; color:var(--dim); font-weight:600; font-size:10px; letter-spacing:1px; padding:4px 8px; border-bottom:1px solid var(--line);}
+td{padding:4px 8px; border-bottom:1px solid rgba(31,43,32,.6); vertical-align:top;}
+.tag{color:var(--dim); font-size:10px; white-space:nowrap;}
+.mono{font-family:inherit;}
+.num{text-align:right;}
+.buy{color:var(--buy); font-weight:700;}
+.sell{color:var(--sell); font-weight:700;}
+.nt{color:var(--nt);}
+.dim{color:var(--dim); font-size:11px;}
+#vote-bar{display:flex; height:22px; margin:8px; border:1px solid var(--line); border-radius:3px; overflow:hidden; font-size:11px;}
+.vb-buy{background:rgba(31,191,111,.25); color:var(--buy); display:flex; align-items:center; justify-content:center; min-width:40px;}
+.vb-sell{background:rgba(255,77,94,.22); color:var(--sell); display:flex; align-items:center; justify-content:center; min-width:40px;}
+#verdict-head{font-size:13px; padding:8px 10px; border-bottom:1px solid var(--line); background:var(--panel2);}
+#verdict-body{padding:10px;}
+.ticket{border:1px solid #3a4a2e; background:#0e150d; border-radius:5px; padding:8px 10px; margin-bottom:8px;}
+.row2{display:flex; gap:8px; padding:3px 0; flex-wrap:wrap; align-items:baseline;}
+.row3{display:inline-block; padding:3px 12px 3px 0;}
+.row2 span:first-child{color:var(--dim); min-width:110px; display:inline-block;}
+.ntbig{font-size:28px; color:var(--nt); letter-spacing:4px; text-align:center; padding:18px 0 6px;}
+.evgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0; font-size:11px;}
+@media(max-width:900px){.evgrid{grid-template-columns:1fr;}}
+.small{color:var(--dim); padding-top:3px;}
+#gates{display:flex; flex-direction:column; gap:4px; padding:8px;}
+.gate{font-size:11px; padding:4px 8px; border-radius:3px; border:1px solid var(--line);}
+.gate.pass{color:var(--buy); border-color:rgba(31,191,111,.35);}
+.gate.fail{color:var(--red); border-color:rgba(255,95,82,.4); background:rgba(255,95,82,.06);}
+#clusters-long li, #clusters-short li{list-style:none; font-size:11px; color:var(--dim); padding:2px 0 2px 10px; border-left:2px solid var(--line); margin:2px 8px;}
+#agent-box{display:none;}
+#agent-table{max-height:480px; overflow:auto; display:block;}
+#agent-table thead th{position:sticky; top:0; background:var(--panel2);}
+footer{margin-top:12px; border:1px solid var(--line); border-radius:6px; padding:10px 14px; font-size:10.5px; color:var(--dim); background:var(--panel); line-height:1.7;}
+.status{margin-top:8px; color:var(--dim); font-size:11px;}
+.gold{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>GOLDEN-500 <span>· XAU/USDT OMNISCIENT SCALP COUNCIL v13.0</span></h1>
+    <span id="clock">—</span>
+    <span id="live-price">$—</span>
+    <div class="controls">
+      <select id="tf">
+        <option value="1m">1m</option>
+        <option value="3m" selected>3m</option>
+        <option value="5m">5m</option>
+        <option value="15m">15m</option>
+      </select>
+      <input id="cmd" placeholder="XAUUSD scalper 3m  (or 1m/5m/15m, + long/short)">
+      <button id="run-btn">⚡ RUN COUNCIL</button>
+    </div>
+  </header>
+
+  <div class="status">ACTIVATION: type <span class="gold">XAUUSD scalper 3m</span> and hit Enter · 500 agents + arbiter #501 THE GILDED HAND · every number pulled live from Binance/Yahoo/gold-api · no invented data</div>
+
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>TWIN DATA SNAPSHOT · PHASE 0 (live sources)</h2>
+        <table id="data-snapshot"><tbody></tbody></table>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>500-VOTE PARLIAMENT</h2>
+        <div id="vote-bar"></div>
+        <table id="vote-table"><thead><tr><th>DIR</th><th class="num">VOTES</th><th class="num">SHARE</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>TOP 5 CLUSTERS (entry ± 0.5 ATR)</h2>
+        <b class="buy" style="padding-left:8px">LONG</b><ul id="clusters-long"></ul>
+        <b class="sell" style="padding-left:8px">SHORT</b><ul id="clusters-short"></ul>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div id="verdict-head">【XAU/USDT 500-COUNCIL · LIVE VERDICT】 warming up…</div>
+        <div id="verdict-body">COUNCIL IS FETCHING LIVE DATA AND PRINTING 500 TICKETS…</div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>GATE SUITE</h2>
+        <div id="gates"></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2 id="agent-toggle" style="cursor:pointer">▸ show 500-agent deck</h2>
+        <div id="agent-box">
+          <div id="agent-count" class="dim" style="padding:6px 10px"></div>
+          <table id="agent-table"><thead><tr><th>ID</th><th>AGENT</th><th>DIVISION</th><th>AXIS/MODE</th><th>DIR</th><th>ENTRY</th><th>SL</th><th>TP1/TP2</th><th class="num">CONF</th><th>THESIS</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+      <div id="last-run" class="status"></div>
+      <div id="agent-count2" class="status"></div>
+    </div>
+  </div>
+
+  <footer>
+    <b class="gold">TERMS & DISCLAIMER</b> — Real-time math from public data only (Binance Futures API, Yahoo Finance, gold-api). This terminal is a research toy, NOT financial advice. Gold reacts violently to CPI/NFP/FOMC, DXY and yields; do not trade into HIGH-impact news ±10 minutes. Default assumptions: equity $10,000, risk 1% per trade, max leverage 15×. NO GUESSED NUMBERS — every figure traces to a live API feed or closed-form formula; unreachable sources are printed as [DATA UNAVAILABLE] and excluded. High risk of total loss. Built from scratch — independent of every earlier terminal.
+  </footer>
+</div>
+<script src="terminal.js"></script>
+</body>
+</html>
